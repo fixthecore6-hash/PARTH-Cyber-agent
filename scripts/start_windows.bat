@@ -9,11 +9,19 @@ echo.
 echo PARTH Startup
 echo -------------
 
-if "%PARTH_MODEL%"=="" (
-    set /p PARTH_MODEL=Enter Ollama model [default: mistral]: 
-    if "%PARTH_MODEL%"=="" set PARTH_MODEL=mistral
+REM Load .env first — PARTH_MODEL set here takes priority over everything
+if exist ".env" (
+    for /f "usebackq tokens=1,* delims==" %%A in (".env") do (
+        set "%%A=%%B"
+    )
 )
-echo [OK] Using model: %PARTH_MODEL%
+
+REM Only prompt if .env didn't set it
+if "!PARTH_MODEL!"=="" (
+    set /p PARTH_MODEL=Enter Ollama model [default: qwen2.5:0.5b]: 
+    if "!PARTH_MODEL!"=="" set PARTH_MODEL=qwen2.5:0.5b
+)
+echo [OK] Using model: !PARTH_MODEL!
 
 echo.
 echo Hosting mode:

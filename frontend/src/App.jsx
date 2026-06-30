@@ -9,8 +9,27 @@ import { ConnectionsPanel } from './components/ConnectionsPanel'
 import { ScanPanel } from './components/ScanPanel'
 import { TimelineView } from './components/TimelineView'
 import { AlertsConfig } from './components/AlertsConfig'
+import { ModelSettings } from './components/ModelSettings'
 import { DevTools } from './components/DevTools'
 import { FileEditor } from './components/FileEditor'
+import { AIAssistant } from './components/AIAssistant'
+import { ScreenCapture } from './components/ScreenCapture'
+
+/*
+ * ╔══════════════════════════════════════════════════════════════════╗
+ * ║  PARTH Host Defender — Intellectual Property Notice             ║
+ * ║  Original Author  : Pushkar                                     ║
+ * ║  UI Refinements   : Assisted by Claude (Anthropic) — claude.ai  ║
+ * ║  License          : Open Source — attribution required          ║
+ * ║                                                                  ║
+ * ║  This file contains a verifiable authorship fingerprint.        ║
+ * ║  Any redistribution must retain this notice intact.             ║
+ * ║  Removal of these credits is a violation of the project terms.  ║
+ * ║                                                                  ║
+ * ║  PARTH_AUTHOR_FINGERPRINT: pushkar|parth-defender|2024          ║
+ * ║  ASSISTED_BY: claude-anthropic|claude.ai                        ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ */
 
 // ── Dynamic server config ─────────────────────────────────────────────────────
 // BASE and WS_BASE are set at runtime after user picks a server
@@ -218,99 +237,7 @@ function ServerPicker({ onConnect }) {
   )
 }
 
-// ── Cursor Eye (desktop only) — uiverse.io sensor-based ──────────────────────
-function CursorEye() {
-  return (
-    <>
-      <style>{`
-        .pe-eye-wrap {
-          --pupil-color: #00e5a0;
-          --pupil-move: 16%;
-          /* Sensors are scoped INSIDE the eye wrap only — no page blocking */
-          --sensor-height: 200px;
-          --sensor-width: calc(var(--sensor-height) * 82.84 / 100);
-          position: relative;
-          display: inline-flex;
-          gap: 5px;
-          /* Critical: clip sensors so they can't escape the eye area */
-          isolation: isolate;
-        }
-        .pe-eye-btn {
-          background: #0b0e18;
-          border: 2px solid #00e5a0;
-          border-radius: 50%;
-          cursor: default;
-          padding: 0.45rem;
-          position: relative;
-          z-index: 2;
-          box-shadow: 0 0 10px rgba(0,229,160,.3);
-          width: 32px; height: 32px;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .pe-eye-btn:hover { box-shadow: 0 0 18px rgba(0,229,160,.6); }
-        .pe-eye-btn:hover .pe-lid { animation: pe-squint 120ms forwards; }
-        .pe-lid {
-          border-radius: 50%;
-          height: 100%; left: 0; position: absolute; top: 0; width: 100%;
-          z-index: 3;
-          background: transparent;
-        }
-        .pe-pupil {
-          background: #000;
-          border: 3px solid var(--pupil-color);
-          border-radius: 50%;
-          width: 10px; height: 10px;
-          transition: transform 120ms ease-out;
-          box-shadow: 0 0 5px rgba(0,229,160,.7);
-          flex-shrink: 0;
-        }
-        .pe-sensor {
-          clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
-          height: var(--sensor-height);
-          left: calc(50% - var(--sensor-width)/2);
-          overflow: hidden;
-          position: absolute;
-          top: calc(50% - var(--sensor-height)/2);
-          transform: rotate(calc(var(--a) * 1deg)) translateY(calc(var(--sensor-height) * -50%));
-          width: var(--sensor-width);
-          z-index: 1;
-          pointer-events: auto;
-        }
-        /* Sensor tracking — scoped to .pe-eye-wrap */
-        .pe-sensor.sn:hover  ~ .pe-eye-btn .pe-pupil { transform: translateX(0) translateY(calc(-3*var(--pupil-move))); }
-        .pe-sensor.sne:hover ~ .pe-eye-btn .pe-pupil { transform: translateX(calc(2*var(--pupil-move))) translateY(calc(-2*var(--pupil-move))); }
-        .pe-sensor.se2:hover ~ .pe-eye-btn .pe-pupil { transform: translateX(calc(3*var(--pupil-move))) translateY(0); }
-        .pe-sensor.sse:hover ~ .pe-eye-btn .pe-pupil { transform: translateX(calc(2*var(--pupil-move))) translateY(calc(2*var(--pupil-move))); }
-        .pe-sensor.ss:hover  ~ .pe-eye-btn .pe-pupil { transform: translateX(0) translateY(calc(3*var(--pupil-move))); }
-        .pe-sensor.ssw:hover ~ .pe-eye-btn .pe-pupil { transform: translateX(calc(-2*var(--pupil-move))) translateY(calc(2*var(--pupil-move))); }
-        .pe-sensor.sw2:hover ~ .pe-eye-btn .pe-pupil { transform: translateX(calc(-3*var(--pupil-move))) translateY(0); }
-        .pe-sensor.snw:hover ~ .pe-eye-btn .pe-pupil { transform: translateX(calc(-2*var(--pupil-move))) translateY(calc(-2*var(--pupil-move))); }
-        @keyframes pe-squint {
-          0%   { background: transparent; }
-          50%  { background: linear-gradient(0deg,#00e5a020 0% 18%,transparent 19% 81%,#00e5a020 82% 100%); }
-          100% { background: linear-gradient(0deg,#00e5a030 0% 35%,transparent 36% 64%,#00e5a030 65% 100%); }
-        }
-      `}</style>
-      {/* Two eyes */}
-      {[0,1].map(idx => (
-        <div key={idx} className="pe-eye-wrap">
-          <div style={{'--a':0}}   className="pe-sensor sn"/>
-          <div style={{'--a':45}}  className="pe-sensor sne"/>
-          <div style={{'--a':90}}  className="pe-sensor se2"/>
-          <div style={{'--a':135}} className="pe-sensor sse"/>
-          <div style={{'--a':180}} className="pe-sensor ss"/>
-          <div style={{'--a':225}} className="pe-sensor ssw"/>
-          <div style={{'--a':270}} className="pe-sensor sw2"/>
-          <div style={{'--a':315}} className="pe-sensor snw"/>
-          <div className="pe-eye-btn">
-            <div className="pe-lid"/>
-            <div className="pe-pupil"/>
-          </div>
-        </div>
-      ))}
-    </>
-  )
-}
+
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition
 const PARTH_NAME = 'PARTH'
@@ -320,28 +247,6 @@ const PARTH_CREATOR = 'Pushkar'
 // We keep a queue and a "tts ready" flag
 let _ttsUnlocked = false
 function unlockTTS() { _ttsUnlocked = true }
-
-function _speakSimple(text) {
-  if (!('speechSynthesis' in window) || !_ttsUnlocked) return
-  window.speechSynthesis.cancel()
-  const clean = text.replace(/[#*`_>[\]]/g, '').trim().slice(0, 500)
-  if (!clean) return
-  const go = () => {
-    const utt = new SpeechSynthesisUtterance(clean)
-    utt.rate = 0.95; utt.pitch = 1.05; utt.volume = 1.0
-    const voices = window.speechSynthesis.getVoices()
-    const pick = voices.find(v => v.name.includes('Google US English'))
-              || voices.find(v => v.name.includes('Google UK English'))
-              || voices.find(v => v.lang === 'en-US' && !v.localService)
-              || voices.find(v => v.lang?.startsWith('en-'))
-              || voices[0]
-    if (pick) utt.voice = pick
-    window.speechSynthesis.speak(utt)
-  }
-  const v = window.speechSynthesis.getVoices()
-  if (v.length) go()
-  else { window.speechSynthesis.onvoiceschanged = () => { go(); window.speechSynthesis.onvoiceschanged = null } }
-}
 
 // ── useIsMobile ───────────────────────────────────────────────────────────────
 function useIsMobile() {
@@ -357,29 +262,31 @@ function useIsMobile() {
 // ── Splash ────────────────────────────────────────────────────────────────────
 function SplashScreen({ onEnter }) {
   return (
-    <div onClick={unlockTTS} style={{ width:'100vw', height:'100vh', background:'#060810', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', fontFamily:"'Arial Black',sans-serif", overflow:'hidden', position:'relative' }}>
+    <div onClick={unlockTTS} style={{ width:'100vw', height:'100vh', background:'#110a08', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', fontFamily:"'Sora',sans-serif", overflow:'hidden', position:'relative' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
-        .sp-letter { display:inline-block; background:linear-gradient(180deg,#ffeb3b,#ff9800); -webkit-background-clip:text; -webkit-text-fill-color:transparent; clip-path:inset(100% 0 0 0); animation:sp-up .5s cubic-bezier(.17,.67,.83,.67) forwards; padding:0 2px; }
-        .sp-letter:nth-child(1){animation-delay:.1s} .sp-letter:nth-child(2){animation-delay:.2s} .sp-letter:nth-child(3){animation-delay:.3s} .sp-letter:nth-child(4){animation-delay:.4s} .sp-letter:nth-child(5){animation-delay:.5s}
-        @keyframes sp-up{from{clip-path:inset(100% 0 0 0);transform:translateY(30px)}to{clip-path:inset(0% 0 0 0);transform:translateY(0)}}
-        .sp-line { position:absolute; left:-100%; width:60%; height:8px; background:linear-gradient(90deg,transparent,#ff9800,#fff,#ff9800,transparent); border-radius:4px; animation:sp-shoot 1s ease-out .7s forwards; opacity:0; }
-        @keyframes sp-shoot{0%{left:-60%;opacity:1}100%{left:110%;opacity:0}}
-        .sp-btn { margin-top:70px; padding:15px 50px; background:linear-gradient(135deg,#ffeb3b,#ff9800); border:none; border-radius:50px; font-size:1rem; font-weight:800; color:#000; letter-spacing:.15em; cursor:pointer; opacity:0; animation:sp-fadein .5s ease 2s forwards; box-shadow:0 0 30px rgba(255,152,0,.4),0 0 60px rgba(255,152,0,.2); transition:transform .2s,box-shadow .2s; font-family:'Arial Black',sans-serif; }
-        .sp-btn:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(255,152,0,.6),0 0 80px rgba(255,152,0,.3)}
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&display=swap');
+        .sp-letter { display:inline-block; background:linear-gradient(180deg,#f5c86a,#e8a93c,#c8702a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; clip-path:inset(100% 0 0 0); animation:sp-up .55s cubic-bezier(.17,.67,.5,1.1) forwards; padding:0 3px; }
+        .sp-letter:nth-child(1){animation-delay:.08s} .sp-letter:nth-child(2){animation-delay:.18s} .sp-letter:nth-child(3){animation-delay:.28s} .sp-letter:nth-child(4){animation-delay:.38s} .sp-letter:nth-child(5){animation-delay:.48s}
+        @keyframes sp-up{from{clip-path:inset(100% 0 0 0);transform:translateY(24px)}to{clip-path:inset(0% 0 0 0);transform:translateY(0)}}
+        .sp-line { position:absolute; left:-100%; width:55%; height:1px; background:linear-gradient(90deg,transparent,#e8a93c,#fff8,#e8a93c,transparent); animation:sp-shoot 1.1s ease-out .6s forwards; opacity:0; }
+        @keyframes sp-shoot{0%{left:-55%;opacity:1}100%{left:110%;opacity:0}}
+        .sp-btn { margin-top:60px; padding:13px 48px; background:transparent; border:1px solid rgba(232,169,60,.6); font-size:.8rem; font-weight:700; color:#e8a93c; letter-spacing:.22em; text-transform:uppercase; cursor:pointer; opacity:0; animation:sp-fadein .5s ease 2s forwards; transition:background .2s,color .2s; font-family:'Sora',sans-serif; }
+        .sp-btn:hover{background:rgba(232,169,60,.12);color:#f5c86a;}
         @keyframes sp-fadein{to{opacity:1}}
-        .sp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,152,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,152,0,.04) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
-        .sp-sub{color:rgba(255,152,0,.5);font-size:.65rem;letter-spacing:.3em;margin-top:12px;opacity:0;animation:sp-fadein .5s ease 1.2s forwards;font-family:'Inter',sans-serif;font-weight:400}
+        .sp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(200,130,60,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,130,60,.04) 1px,transparent 1px),linear-gradient(45deg,rgba(200,130,60,.018) 1px,transparent 1px),linear-gradient(-45deg,rgba(200,130,60,.018) 1px,transparent 1px);background-size:44px 44px,44px 44px,44px 44px,44px 44px;pointer-events:none}
+        .sp-sub{color:rgba(200,130,60,.45);font-size:.62rem;letter-spacing:.28em;margin-top:10px;opacity:0;animation:sp-fadein .5s ease 1.3s forwards;font-family:'Sora',sans-serif;font-weight:400;text-transform:uppercase}
+        .sp-deva{color:rgba(200,130,60,.3);font-size:.7rem;letter-spacing:.15em;margin-top:6px;opacity:0;animation:sp-fadein .5s ease 1.6s forwards;font-family:'Tiro Devanagari Sanskrit',serif}
       `}</style>
       <div className="sp-grid"/>
       <div className="sp-line"/>
-      <div style={{ position:'relative', zIndex:2 }}>
-        <div style={{ fontSize:'clamp(4rem,14vw,9rem)', display:'flex', justifyContent:'center', filter:'drop-shadow(0 0 30px rgba(255,152,0,.4))' }}>
+      <div style={{ position:'relative', zIndex:2, textAlign:'center' }}>
+        <div style={{ fontSize:'clamp(4rem,13vw,8.5rem)', display:'flex', justifyContent:'center', filter:'drop-shadow(0 0 40px rgba(232,169,60,.25))' }}>
           {'PARTH'.split('').map((l,i) => <span key={i} className="sp-letter">{l}</span>)}
         </div>
-        <div className="sp-sub">PROACTIVE AUTONOMOUS REAL-TIME HOST-DEFENDER</div>
+        <div className="sp-sub">Proactive Autonomous Real-Time Host-Defender</div>
+        <div className="sp-deva">रक्षा · विवेक · सतर्कता</div>
       </div>
-      <button className="sp-btn" onClick={e => { unlockTTS(); onEnter(); }}>ENTER PORTAL</button>
+      <button className="sp-btn" onClick={e => { unlockTTS(); onEnter(); }}>Enter Dashboard</button>
     </div>
   )
 }
@@ -924,6 +831,13 @@ const MOB_TABS = [
 function MobileApp({ events, stats, connected }) {
   const [tab,setTab]       = useState('home')
   const [sub,setSub]       = useState('network')
+  const [theme, setTheme]  = useState(() => localStorage.getItem('parth_theme') || 'dark')
+
+  useEffect(() => {
+    document.body.classList.toggle('parth-light', theme === 'light')
+    localStorage.setItem('parth_theme', theme)
+  }, [theme])
+
   const alertCount = events.filter(e=>['critical','high'].includes(e.severity)&&!['system_metrics','listening_ports_snapshot'].includes(e.event_type)).length
 
   return (
@@ -931,7 +845,7 @@ function MobileApp({ events, stats, connected }) {
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'var(--bg2)', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:30, height:30, borderRadius:7, background:'radial-gradient(circle at 35% 35%,#00e5a0,#003d2a)', border:'1px solid var(--green)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:900, color:'#000', boxShadow:'var(--glow-g)' }}>P</div>
+          <div style={{ width:30, height:30, borderRadius:7, background:'var(--bg4)', border:'1px solid var(--gold)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, color:'var(--gold)', fontFamily:'var(--deva)', boxShadow:'var(--glow-gold)' }}>प</div>
           <div>
             <div style={{ color:'var(--text)', fontWeight:800, letterSpacing:'.1em', fontSize:14 }}>PARTH</div>
             <div style={{ color:connected?'var(--green)':'var(--red)', fontSize:9, fontFamily:'var(--mono)', letterSpacing:'.1em' }}>● {connected?'LIVE':'OFFLINE'}</div>
@@ -973,14 +887,29 @@ function MobileApp({ events, stats, connected }) {
         {tab==='more'    && (
           <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
             <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-              {[{id:'network',l:'🌐 Net'},{id:'scan',l:'🔍 Scan'},{id:'procs',l:'⚙ Procs'},{id:'settings',l:'⚙ Settings'},{id:'dev',l:'🛠 Dev'}].map(t=>(
+              {[{id:'network',l:'🌐 Net'},{id:'scan',l:'🔍 Scan'},{id:'procs',l:'⚙ Procs'},{id:'screen',l:'⊙ Screen'},{id:'settings',l:'◈ Settings'},{id:'dev',l:'🛠 Dev'}].map(t=>(
                 <button key={t.id} onClick={()=>setSub(t.id)} style={{ background:sub===t.id?'var(--bg4)':'var(--bg3)', color:sub===t.id?'var(--text)':'var(--text3)', border:`1px solid ${sub===t.id?'var(--border2)':'var(--border)'}`, borderRadius:6, padding:'6px 12px', fontSize:12 }}>{t.l}</button>
               ))}
             </div>
             {sub==='network'  && <ConnectionsPanel/>}
             {sub==='scan'     && <ScanPanel/>}
             {sub==='procs'    && <ProcessTable/>}
-            {sub==='settings' && <AlertsConfig/>}
+            {sub==='screen'   && <ScreenCapture/>}
+            {sub==='settings' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:10, padding:'12px 14px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <span style={{ color:'var(--text)', fontSize:13 }}>{theme==='dark'?'🌙 Dark Mode':'☀️ Light Mode'}</span>
+                  <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} style={{ padding:'6px 14px', borderRadius:7, fontSize:11, fontWeight:600, background:'var(--bg4)', color:'var(--gold)', border:'1px solid var(--border2)', cursor:'pointer' }}>
+                    Switch to {theme==='dark'?'Light':'Dark'}
+                  </button>
+                </div>
+                <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:10, overflow:'hidden' }}>
+                  <div style={{ padding:'10px 12px', borderBottom:'1px solid var(--border)', background:'var(--bg4)', color:'var(--text2)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>🤖 AI Model</div>
+                  <div style={{ padding:'12px' }}><ModelSettings /></div>
+                </div>
+                <AlertsConfig/>
+              </div>
+            )}
             {sub==='dev'      && <DevTools/>}
           </div>
         )}
@@ -1004,20 +933,30 @@ function MobileApp({ events, stats, connected }) {
 
 // ── DESKTOP ───────────────────────────────────────────────────────────────────
 const DESK_TABS = [
-  {id:'Dashboard', icon:'⬡'},
-  {id:'Events',    icon:'⚡'},
-  {id:'Timeline',  icon:'◷'},
-  {id:'Processes', icon:'⚙'},
-  {id:'Network',   icon:'🌐'},
-  {id:'Defense',   icon:'🛡'},
-  {id:'Scan',      icon:'🔍'},
-  {id:'Dev Tools', icon:'🛠'},
-  {id:'Settings',  icon:'◈'},
+  {id:'Dashboard',     icon:'⬡'},
+  {id:'Events',        icon:'⚡'},
+  {id:'Timeline',      icon:'◷'},
+  {id:'Processes',     icon:'⚙'},
+  {id:'Network',       icon:'🌐'},
+  {id:'Defense',       icon:'🛡'},
+  {id:'AI Assistant',  icon:'◈'},
+  {id:'Screen',        icon:'⊙'},
+  {id:'Scan',          icon:'🔍'},
+  {id:'Dev Tools',     icon:'🛠'},
+  {id:'Settings',      icon:'⚙'},
 ]
 
 function DesktopApp({ events, stats, connected, statsError, server, onChangeServer }) {
   const [tab,setTab]       = useState('Dashboard')
   const [toasts,setToasts] = useState([])
+  const [theme, setTheme]  = useState(() => localStorage.getItem('parth_theme') || 'dark')
+
+  useEffect(() => {
+    document.body.classList.toggle('parth-light', theme === 'light')
+    localStorage.setItem('parth_theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark')
 
   useEffect(()=>{
     const last=events[0]; if(!last) return
@@ -1030,10 +969,12 @@ function DesktopApp({ events, stats, connected, statsError, server, onChangeServ
 
   const alertCount=events.filter(e=>['critical','high'].includes(e.severity)&&!['system_metrics','listening_ports_snapshot'].includes(e.event_type)).length
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', position:'relative', zIndex:1 }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', position:'relative', zIndex:1 }}>
       {/* Toasts */}
-      <div style={{ position:'fixed', top:62, right:16, zIndex:9999, display:'flex', flexDirection:'column', gap:8 }}>
+      <div style={{ position:'fixed', top:16, right:16, zIndex:9999, display:'flex', flexDirection:'column', gap:8 }}>
         {toasts.map(t=>(
           <div key={t.id} style={{ background:t.sev==='critical'?'rgba(255,56,96,.95)':'rgba(255,140,66,.95)', color:'#fff', borderRadius:8, padding:'10px 16px', fontSize:12, fontFamily:'var(--mono)', maxWidth:340, boxShadow:'0 4px 24px rgba(0,0,0,.5)', animation:'slideIn .3s ease', display:'flex', alignItems:'center', gap:8 }}>
             ⚠ {t.msg}
@@ -1041,45 +982,100 @@ function DesktopApp({ events, stats, connected, statsError, server, onChangeServ
         ))}
       </div>
 
-      {/* Header */}
-      <header style={{ background:'rgba(11,14,24,.95)', backdropFilter:'blur(10px)', borderBottom:'1px solid var(--border)', padding:'0 20px', display:'flex', alignItems:'center', justifyContent:'space-between', height:54, flexShrink:0, position:'relative', zIndex:10 }}>
+      {/* ── Vertical Sidebar ── */}
+      <aside className="sidebar" style={{
+        width: sidebarCollapsed ? 60 : 200,
+        minWidth: sidebarCollapsed ? 60 : 200,
+        height:'100vh', display:'flex', flexDirection:'column',
+        background:'var(--sidebar-bg)', borderRight:'1px solid var(--sidebar-border)',
+        transition:'width .25s ease, min-width .25s ease', overflow:'hidden',
+        position:'relative', zIndex:20, flexShrink:0
+      }}>
+        {/* Mandala top decoration */}
+        <div className="sidebar-mandala" aria-hidden="true"/>
+
         {/* Logo */}
-        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:34, height:34, borderRadius:8, background:'radial-gradient(circle at 35% 35%,#00e5a0,#002a1c)', border:'1px solid var(--green)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:900, color:'#000', boxShadow:'0 0 15px rgba(0,229,160,.4)' }}>P</div>
+        <div style={{ padding: sidebarCollapsed ? '18px 0 14px' : '18px 16px 14px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid var(--sidebar-border)', flexShrink:0 }}>
+          <div style={{ width:36, height:36, borderRadius:'50%', background:'var(--sidebar-logo-bg)', border:'2px solid var(--gold)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:900, color:'var(--gold)', boxShadow:'0 0 14px var(--gold-glow)', flexShrink:0, marginLeft: sidebarCollapsed ? 12 : 0 }}>
+            प
+          </div>
+          {!sidebarCollapsed && (
             <div>
-              <div style={{ color:'var(--text)', fontFamily:'var(--mono)', fontWeight:700, letterSpacing:'.15em', fontSize:16, lineHeight:1 }}>PARTH</div>
-              <div style={{ color:'var(--text3)', fontSize:9, letterSpacing:'.2em' }}>HOST-DEFENDER v1.0</div>
+              <div style={{ color:'var(--gold)', fontFamily:'var(--mono)', fontWeight:700, letterSpacing:'.15em', fontSize:15, lineHeight:1 }}>PARTH</div>
+              <div style={{ color:'var(--text3)', fontSize:8, letterSpacing:'.15em', marginTop:2 }}>HOST-DEFENDER v1.0</div>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Nav */}
-          <nav style={{ display:'flex', gap:1 }}>
-            {DESK_TABS.map(t=>(
-              <button key={t.id} onClick={()=>setTab(t.id)}
-                style={{ background:'transparent', color:tab===t.id?'var(--text)':'var(--text3)', border:'none', borderBottom:`2px solid ${tab===t.id?'var(--green)':'transparent'}`, padding:'0 14px', height:54, fontSize:12, display:'flex', alignItems:'center', gap:5, transition:'all .2s', position:'relative' }}>
-                <span style={{ fontSize:11 }}>{t.icon}</span> {t.id}
-                {t.id==='Events'&&alertCount>0&&<span style={{ position:'absolute', top:10, right:6, background:'var(--red)', color:'#fff', borderRadius:8, fontSize:8, padding:'1px 4px', fontFamily:'var(--mono)', fontWeight:700, animation:'pulse 2s infinite' }}>{alertCount>99?'99+':alertCount}</span>}
+        {/* Nav items */}
+        <nav style={{ flex:1, overflowY:'auto', overflowX:'hidden', padding:'10px 0' }}>
+          {DESK_TABS.map(t=>{
+            const isActive = tab === t.id
+            return (
+              <button key={t.id} onClick={()=>setTab(t.id)} title={sidebarCollapsed ? t.id : undefined}
+                style={{
+                  width:'100%', display:'flex', alignItems:'center', gap:10,
+                  padding: sidebarCollapsed ? '11px 0' : '11px 16px',
+                  justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                  background: isActive ? 'var(--sidebar-active-bg)' : 'transparent',
+                  borderLeft: `3px solid ${isActive ? 'var(--gold)' : 'transparent'}`,
+                  borderRight:'none', borderTop:'none', borderBottom:'none',
+                  color: isActive ? 'var(--gold)' : 'var(--text3)',
+                  fontSize:12, fontWeight: isActive ? 600 : 400,
+                  transition:'all .18s', cursor:'pointer', position:'relative',
+                  letterSpacing:'.04em'
+                }}>
+                <span style={{ fontSize:15, flexShrink:0 }}>{t.icon}</span>
+                {!sidebarCollapsed && <span>{t.id}</span>}
+                {t.id==='Events' && alertCount>0 && (
+                  <span style={{ position: sidebarCollapsed ? 'absolute' : 'static', top: sidebarCollapsed ? 6 : 'auto', right: sidebarCollapsed ? 6 : 'auto', marginLeft:'auto', background:'var(--red)', color:'#fff', borderRadius:8, fontSize:8, padding:'1px 5px', fontFamily:'var(--mono)', fontWeight:700, animation:'pulse 2s infinite' }}>
+                    {alertCount>99?'99+':alertCount}
+                  </span>
+                )}
               </button>
-            ))}
-          </nav>
-        </div>
+            )
+          })}
+        </nav>
 
-        {/* Status */}
-        <div style={{ display:'flex', alignItems:'center', gap:10, fontSize:11, fontFamily:'var(--mono)' }}>
-          {statsError && <span style={{ color:'var(--red)' }}>⚠ BACKEND OFFLINE</span>}
-          <CursorEye/>
-          {server && <span style={{ color:'var(--text3)', fontSize:10, maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{server.name}</span>}
-          <button onClick={onChangeServer} style={{ background:'var(--bg4)', color:'var(--text3)', border:'1px solid var(--border)', borderRadius:6, padding:'4px 10px', fontSize:10, cursor:'pointer', letterSpacing:'.05em' }}>⇄ Switch</button>
-          <div style={{ display:'flex', alignItems:'center', gap:6, background:'var(--bg4)', border:'1px solid var(--border)', borderRadius:20, padding:'4px 10px' }}>
-            <div style={{ width:6, height:6, borderRadius:'50%', background:connected?'var(--green)':'var(--red)', animation:connected?'pulse 2s infinite':'none', boxShadow:connected?'0 0 6px var(--green)':'none' }}/>
-            <span style={{ color:connected?'var(--green)':'var(--red)', letterSpacing:'.1em' }}>{connected?'LIVE':'OFFLINE'}</span>
+        {/* Sidebar footer — status + server */}
+        <div style={{ borderTop:'1px solid var(--sidebar-border)', padding: sidebarCollapsed ? '10px 0' : '10px 14px', flexShrink:0 }}>
+          {/* Connection status */}
+          <div style={{ display:'flex', alignItems:'center', gap:6, justifyContent: sidebarCollapsed ? 'center' : 'flex-start', marginBottom: sidebarCollapsed ? 0 : 8 }}>
+            <div style={{ width:7, height:7, borderRadius:'50%', background:connected?'var(--green)':'var(--red)', animation:connected?'pulse 2s infinite':'none', flexShrink:0 }}/>
+            {!sidebarCollapsed && <span style={{ color:connected?'var(--green)':'var(--red)', fontSize:10, fontFamily:'var(--mono)', letterSpacing:'.1em' }}>{connected?'LIVE':'OFFLINE'}</span>}
           </div>
+          {!sidebarCollapsed && (
+            <>
+              {statsError && <div style={{ color:'var(--red)', fontSize:9, marginBottom:6 }}>⚠ BACKEND OFFLINE</div>}
+              {server && <div style={{ color:'var(--text3)', fontSize:9, marginBottom:6, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{server.name}</div>}
+              <button onClick={onChangeServer} style={{ width:'100%', background:'var(--bg4)', color:'var(--text3)', border:'1px solid var(--border)', borderRadius:6, padding:'5px 8px', fontSize:10, cursor:'pointer' }}>⇄ Switch Server</button>
+            </>
+          )}
         </div>
-      </header>
 
-      {/* Main */}
-      <main style={{ flex:1, overflow:'auto', padding:16 }}>
+        {/* Collapse toggle */}
+        <button onClick={()=>setSidebarCollapsed(v=>!v)} style={{ background:'var(--sidebar-bg)', color:'var(--text3)', border:'none', borderTop:'1px solid var(--sidebar-border)', padding:'8px 0', fontSize:14, cursor:'pointer', flexShrink:0 }}>
+          {sidebarCollapsed ? '›' : '‹'}
+        </button>
+
+        {/* Bottom lotus decoration */}
+        <div className="sidebar-lotus" aria-hidden="true"/>
+      </aside>
+
+      {/* ── Main content area ── */}
+      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        {/* Thin top bar — page title only */}
+        <div style={{ height:44, background:'var(--topbar-bg)', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', padding:'0 20px', flexShrink:0, justifyContent:'space-between' }}>
+          <span style={{ color:'var(--gold)', fontSize:11, fontFamily:'var(--mono)', letterSpacing:'.12em', textTransform:'uppercase' }}>{tab}</span>
+          <button onClick={toggleTheme} title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            style={{ background:'var(--bg4)', color:'var(--text2)', border:'1px solid var(--border)', borderRadius:7, padding:'5px 12px', fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', gap:6, transition:'all .2s' }}>
+            <span style={{ fontSize:14 }}>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span style={{ fontFamily:'var(--mono)', fontSize:10, letterSpacing:'.06em' }}>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+          </button>
+        </div>
+
+        {/* Scrollable main */}
+        <main style={{ flex:1, overflow:'auto', padding:16 }}>
         {tab==='Dashboard' && (
           <div style={{ display:'flex', flexDirection:'column', gap:14, maxWidth:1400 }}>
             <StatCards stats={stats}/>
@@ -1106,10 +1102,52 @@ function DesktopApp({ events, stats, connected, statsError, server, onChangeServ
             <DefensePanel/>
           </div>
         )}
-        {tab==='Scan'      && <ScanPanel/>}
-        {tab==='Dev Tools' && <DevTools/>}
-        {tab==='Settings'  && <AlertsConfig/>}
+        {tab==='Scan'         && <ScanPanel/>}
+        {tab==='Screen'       && <ScreenCapture/>}
+        {tab==='Dev Tools'    && <DevTools/>}
+        {tab==='AI Assistant' && <AIAssistant/>}
+        {tab==='Settings'     && (
+          <div style={{ display:'flex', flexDirection:'column', gap:20, maxWidth:720 }}>
+            {/* Theme toggle card */}
+            <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:12, padding:'16px 18px', display:'flex', alignItems:'center', gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:10, background:'var(--bg4)', border:'1px solid var(--border2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>
+                {theme === 'dark' ? '🌙' : '☀️'}
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ color:'var(--text)', fontWeight:600, fontSize:13 }}>Interface Theme</div>
+                <div style={{ color:'var(--text3)', fontSize:11, marginTop:2 }}>
+                  Currently: <span style={{ color:'var(--gold)', fontFamily:'var(--mono)' }}>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                </div>
+              </div>
+              <button onClick={toggleTheme} style={{
+                padding:'9px 20px', borderRadius:8, fontWeight:600, fontSize:12,
+                background: theme === 'dark' ? 'rgba(240,184,64,.12)' : 'rgba(14,9,5,.08)',
+                color: theme === 'dark' ? 'var(--amber)' : 'var(--text2)',
+                border:`1px solid ${theme === 'dark' ? 'rgba(240,184,64,.3)' : 'var(--border)'}`,
+                cursor:'pointer', transition:'all .2s',
+              }}>
+                {theme === 'dark' ? '☀️ Switch to Light' : '🌙 Switch to Dark'}
+              </button>
+            </div>
+
+            {/* AI Model selector */}
+            <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden' }}>
+              <div style={{ padding:'14px 18px', borderBottom:'1px solid var(--border)', background:'var(--bg4)', display:'flex', alignItems:'center', gap:10 }}>
+                <span style={{ fontSize:16 }}>🤖</span>
+                <div style={{ color:'var(--text)', fontSize:13, fontWeight:700 }}>AI Model Configuration</div>
+                <span style={{ marginLeft:'auto', fontSize:9, padding:'2px 8px', borderRadius:20, background:'rgba(0,229,160,.1)', color:'var(--green)', fontFamily:'var(--mono)', border:'1px solid rgba(0,229,160,.2)' }}>OLLAMA</span>
+              </div>
+              <div style={{ padding:'16px 18px' }}>
+                <ModelSettings />
+              </div>
+            </div>
+
+            {/* Alerts & other settings */}
+            <AlertsConfig />
+          </div>
+        )}
       </main>
+      </div>
     </div>
   )
 }

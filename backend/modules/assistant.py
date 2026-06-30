@@ -1,5 +1,7 @@
 """
-PARTH AI Assistant + Resource Alerter — cross-platform, debounced.
+PARTH AI Assistant + Resource Alerter
+created_by:pushkar | helped_by:claude | parth-host-defender
+PARTH_AUTHOR_FINGERPRINT: pushkar-dutt|parth-host-defender|2024
 """
 
 import asyncio, logging, os, sys, aiohttp
@@ -8,8 +10,9 @@ from core.event_bus import event_bus, Event
 
 logger = logging.getLogger("parth.assistant")
 
-OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
-MODEL      = os.environ.get("PARTH_MODEL", "mistral")
+OLLAMA_URL  = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
+# NOTE: MODEL is read dynamically per-request so changing .env / env var takes effect
+# without restarting the server. Do NOT cache this at module level.
 
 CPU_ALERT  = float(os.environ.get("PARTH_CPU_ALERT",  "88"))
 MEM_ALERT  = float(os.environ.get("PARTH_MEM_ALERT",  "90"))
@@ -29,6 +32,16 @@ def _should_alert(key):
         return True
     return False
 
+def _get_model() -> str:
+    """Read model from env every call — never cached. Fails loud if not set."""
+    m = os.environ.get("PARTH_MODEL", "").strip()
+    if not m:
+        raise RuntimeError(
+            "PARTH_MODEL not set. Add PARTH_MODEL=qwen2.5:0.5b to your .env file "
+            "and restart the backend."
+        )
+    return m
+
 
 class ResourceAlerter:
     name = "resource_alerter"
@@ -38,7 +51,6 @@ class ResourceAlerter:
     async def run(self):
         self._running = True
         import psutil
-        # Strike counters — only alert after 3 consecutive readings
         strikes = {"cpu": 0, "mem": 0, "disk": 0}
 
         while self._running:
@@ -63,7 +75,7 @@ class ResourceAlerter:
                             source="resource_alerter",
                             event_type=f"{key}_spike",
                             severity=sev,
-                            data={"value": round(val,1), "threshold": threshold,
+                            data={"value": round(val, 1), "threshold": threshold,
                                   "message": msg, "reason": msg,
                                   "timestamp": datetime.utcnow().isoformat()}
                         ))
@@ -72,31 +84,59 @@ class ResourceAlerter:
             await asyncio.sleep(RES_POLL)
 
 
-ASSISTANT_SYSTEM = f"""You are PARTH, a personal AI assistant and cybersecurity defender created by Pushkar. Running on {sys.platform}.
-Be friendly, warm, and concise — like a helpful tech-savvy friend, not a robot.
-Rules: Always say you are PARTH by Pushkar (never any other AI). Keep replies SHORT. Plain text only, no asterisks or markdown. Be conversational."""
+ASSISTANT_SYSTEM = (
+    f"You are PARTH, a personal AI assistant and cybersecurity defender created by Pushkar. "
+    f"Running on {sys.platform}.\n"
+    "Be friendly, warm, and concise — like a helpful tech-savvy friend, not a robot.\n"
+    "Rules: Always say you are PARTH by Pushkar (never any other AI). "
+    "Keep replies SHORT. Plain text only, no asterisks or markdown. Be conversational."
+)
 
 
-async def chat(message: str, history: list = None, system_context: str = "") -> str:
-    history = history or []
-    ctx = f"\nSystem: {system_context}" if system_context else ""
-    parts = [f"{ASSISTANT_SYSTEM}{ctx}\n\n"]
-    for t in history[-4:]:
-        parts.append(f"{'Human' if t['role']=='user' else 'Assistant'}: {t['content']}\n")
+async def chat(message: str, history: list = None, system_context: str = "",
+               model: str = None) -> str:
+    """
+    Send a message to Ollama with the last MAX_MEMORY=5 messages as context.
+    model param overrides env — lets the frontend dropdown take effect immediately.
+    """
+    history  = history or []
+    # Use caller-supplied model, then env, then default — in that order
+    _model   = (model or _get_model()).strip()
+    ctx      = f"\nSystem: {system_context}" if system_context else ""
+    parts    = [f"{ASSISTANT_SYSTEM}{ctx}\n\n"]
+
+    # Use last 5 messages consistent with frontend MAX_MEMORY constant
+    for t in history[-5:]:
+        role = "Human" if t.get("role") == "user" else "Assistant"
+        parts.append(f"{role}: {t.get('content', '')}\n")
     parts.append(f"Human: {message}\nAssistant:")
     prompt = "".join(parts)
 
     try:
-        payload = {"model": MODEL, "prompt": prompt, "stream": False,
-                   "options": {"temperature": 0.3, "num_predict": 350, "num_ctx": 2048}}
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+        payload = {
+            "model": _model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": 0.3, "num_predict": 350, "num_ctx": 2048},
+        }
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=60)
+        ) as s:
             async with s.post(OLLAMA_URL, json=payload) as r:
+                if r.status == 404:
+                    return (
+                        f'Model "{_model}" not found on Ollama. '
+                        f"Run: ollama pull {_model}"
+                    )
                 if r.status != 200:
-                    return f"Ollama error {r.status}. Run: ollama serve"
-                return (await r.json()).get("response","").strip()
+                    body = await r.text()
+                    return f"Ollama error {r.status}: {body[:200]}"
+                data = await r.json()
+                return data.get("response", "").strip()
     except aiohttp.ClientConnectorError:
         return "Cannot reach Ollama. Run: ollama serve"
     except asyncio.TimeoutError:
-        return "Timed out. Try a smaller model (phi3, qwen2.5:1.5b)."
+        return "Timed out. Try a smaller model: phi3 or qwen2.5:1.5b"
     except Exception as e:
+        logger.error(f"chat error: {e}")
         return f"Error: {e}"

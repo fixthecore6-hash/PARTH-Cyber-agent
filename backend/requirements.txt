@@ -6,6 +6,7 @@ psutil>=7.0.0,<8.0
 watchdog>=6.0.0,<7.0
 pydantic>=2.10.0,<3.0
 python-multipart>=0.0.20,<1.0
+mss>=9.0.0,<10.0              # on-demand screenshot capture
 
 # These ranges intentionally avoid old pins that do not ship wheels for
 # Python 3.13/3.14 on every supported platform. Keep lower bounds high enough

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { StartupSettings } from './StartupSettings'
 
 const BASE = window.__PARTH_BASE__ || '/api'
 
@@ -20,7 +21,26 @@ export function AlertsConfig() {
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 700 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 720 }}>
+
+      {/* ── STARTUP SETTINGS (New section) ── */}
+      <div>
+        <div style={{ color: 'var(--text3)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '.15em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+          <span>Startup Settings</span>
+          <span style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+        </div>
+        <StartupSettings />
+      </div>
+
+      {/* ── DIVIDER ── */}
+      <div style={{ color: 'var(--text3)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '.15em', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+        <span>Network & Alerts</span>
+        <span style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+      </div>
+
+      {/* ── Network Info ── */}
       {netInfo && (
         <div style={{ background: 'var(--bg3)', border: '1px solid var(--green)', borderRadius: 8, padding: '14px 18px' }}>
           <div style={{ color: 'var(--green)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>📱 Access from Phone / Any Device on Same WiFi</div>
@@ -31,6 +51,8 @@ export function AlertsConfig() {
           <div style={{ color: 'var(--text3)', fontSize: 11, marginTop: 8 }}>If unreachable: <code style={{ color: 'var(--amber)' }}>sudo ufw allow 5173 && sudo ufw allow 8000</code></div>
         </div>
       )}
+
+      {/* ── Alert Destinations ── */}
       <div style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, padding: '16px 18px' }}>
         <div style={{ color: 'var(--text2)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
           Alert Destinations
@@ -58,6 +80,7 @@ export function AlertsConfig() {
         ))}
       </div>
 
+      {/* ── Export Events ── */}
       <div style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, padding: '16px 18px' }}>
         <div style={{ color: 'var(--text2)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
           Export Events
@@ -74,20 +97,6 @@ export function AlertsConfig() {
             padding: '8px 20px', fontSize: 12, fontFamily: 'var(--mono)',
           }}>↓ Export JSON</a>
         </div>
-      </div>
-
-      <div style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, padding: '16px 18px' }}>
-        <div style={{ color: 'var(--text2)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-          Systemd Auto-Start
-        </div>
-        <div style={{ color: 'var(--text3)', fontSize: 12, marginBottom: 8 }}>Run these commands to make PARTH start on boot:</div>
-        <pre style={{
-          background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 4,
-          padding: '10px 12px', fontSize: 11, fontFamily: 'var(--mono)',
-          color: 'var(--text)', overflowX: 'auto',
-        }}>{`sudo bash scripts/install_service.sh
-sudo systemctl enable parth
-sudo systemctl start parth`}</pre>
       </div>
     </div>
   )
